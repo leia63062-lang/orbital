@@ -1,0 +1,241 @@
+
+@import "tailwindcss";
+
+:root {
+  font-family: Inter, Arial, sans-serif;
+  background: #050812;
+  color: #e8edf7;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+  background: #050812;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+.orbital-app {
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse at 50% 45%, #101b2d 0%, #080d18 55%, #050812 100%);
+}
+
+.topbar {
+  height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  border-bottom: 1px solid #ffffff12;
+  background: #080d18;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-icon {
+  color: #72e4d1;
+  font-size: 30px;
+}
+
+.brand-name {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 5px;
+}
+
+.brand-subtitle {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #718096;
+  margin-top: 4px;
+}
+
+.status {
+  color: #72e4d1;
+  font-size: 11px;
+  letter-spacing: 2px;
+}
+
+.main-content {
+  max-width: 1900px;
+  margin: auto;
+  padding: 30px;
+}
+
+.page-heading {
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  color: #72e4d1;
+  font-size: 10px;
+  letter-spacing: 3px;
+}
+
+.page-title {
+  font-size: clamp(28px, 4vw, 46px);
+  font-weight: 650;
+  margin: 12px 0;
+  letter-spacing: -1.5px;
+}
+
+.page-description {
+  color: #8190a7;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.metric-card, .panel {
+  border: 1px solid #ffffff12;
+  background: rgba(12, 19, 33, 0.88);
+  border-radius: 12px;
+  padding: 18px;
+}
+
+.metric-label {
+  color: #718096;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+}
+
+.metric-value {
+  font-family: monospace;
+  font-size: 25px;
+  margin-top: 12px;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 290px;
+  gap: 16px;
+}
+
+.viewport {
+  height: min(72vh, 760px);
+  min-height: 480px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #ffffff18;
+  border-radius: 15px;
+  background: #030711;
+}
+
+.viewport canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.viewport-label {
+  position: absolute;
+  z-index: 2;
+  top: 20px;
+  left: 20px;
+  pointer-events: none;
+  color: #72e4d1;
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+
+.viewport-hint {
+  position: absolute;
+  bottom: 18px;
+  left: 20px;
+  z-index: 2;
+  pointer-events: none;
+  color: #8190a7;
+  font-size: 10px;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.panel-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid #ffffff0d;
+  font-size: 11px;
+}
+
+.info-row span:first-child {
+  color: #8190a7;
+}
+
+.info-row span:last-child {
+  color: #dce6f5;
+  font-family: monospace;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 22px 0;
+  color: #59677c;
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+
+@media (max-width: 900px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .viewport {
+    height: 60vh;
+  }
+
+  .metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 550px) {
+  .main-content {
+    padding: 16px;
+  }
+
+  .topbar {
+    padding: 0 16px;
+  }
+
+  .viewport {
+    min-height: 400px;
+  }
+}
