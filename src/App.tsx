@@ -12,8 +12,7 @@ import {
   RotateCcw,
   Satellite,
   Settings2,
-  Timer,
-  Zap,
+    Timer,
 } from 'lucide-react'
 import { useState } from 'react'
 import SimulationCanvas from './components/SimulationCanvas'
@@ -111,12 +110,18 @@ function App() {
               {speed}
             </button>
             <button
-              onClick={() => { setRunning(true); setSpeed('1×'); setSelected('Earth') }}
-              className="rounded-md border border-white/10 p-2 text-slate-400 hover:text-white"
-              title="Reset interface"
-            >
-              <RotateCcw size={14} />
-            </button>
+  onClick={() => {
+    setRunning(true)
+    setSpeed('1×')
+    setSelected('Earth')
+    setShowOrbits(true)
+    setShowLabels(true)
+  }}
+  className="rounded-md border border-white/10 p-2 text-slate-400 hover:text-white"
+  title="Reset simulation"
+>
+  <RotateCcw size={14} />
+</button>
           </div>
         </div>
 
@@ -198,7 +203,13 @@ function App() {
             </div>
 
             <div className="absolute inset-0">
-              <SimulationCanvas />
+              <SimulationCanvas
+  running={running}
+  speed={Number(speed.replace('×', ''))}
+  selected={selected}
+  showOrbits={showOrbits}
+  showLabels={showLabels}
+/>
             </div>
 
             <div className="pointer-events-none absolute inset-0 border border-white/[0.04]" />

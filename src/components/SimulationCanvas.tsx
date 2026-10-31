@@ -1,192 +1,218 @@
 
 import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls, Stars } from '@react-three/drei'
+import { Html, OrbitControls, Stars } from '@react-three/drei'
 import { useRef } from 'react'
 import * as THREE from 'three'
 
-interface PlanetData {
-  name: string
-  color: string
-  size: number
-  distance: number
+interface Props {
+  running: boolean
   speed: number
-  phase: number
-  height: number
-  roughness: number
-  emissive?: string
-  ring?: boolean
+  selected: string
+  showOrbits: boolean
+  showLabels: boolean
 }
 
-const planets: PlanetData[] = [
-  { name: 'Mercury', color: '#aaa69f', size: 0.20, distance: 2.5, speed: 1.1, phase: 0, height: 0, roughness: 0.9 },
-  { name: 'Venus', color: '#e8bd7c', size: 0.31, distance: 3.8, speed: 0.78, phase: 1.2, height: 0.08, roughness: 0.75 },
-  { name: 'Earth', color: '#277fd4', size: 0.36, distance: 5.2, speed: 0.58, phase: 2.4, height: -0.1, roughness: 0.65, emissive: '#071b36' },
-  { name: 'Mars', color: '#cf6849', size: 0.29, distance: 6.7, speed: 0.42, phase: 3.5, height: 0.16, roughness: 0.85 },
-  { name: 'Jupiter', color: '#d7ae83', size: 0.72, distance: 8.8, speed: 0.25, phase: 4.4, height: -0.12, roughness: 0.8 },
-  { name: 'Saturn', color: '#d9c18f', size: 0.61, distance: 11.1, speed: 0.18, phase: 5.3, height: 0.1, roughness: 0.8, ring: true },
+const bodies = [
+  { name: 'Mercury', color: '#a9a49b', size: 0.16, distance: 2.2, period: 0.24, phase: 0.5 },
+  { name: 'Venus', color: '#d9b17d', size: 0.25, distance: 3.3, period: 0.62, phase: 1.5 },
+  { name: 'Earth', color: '#438ed0', size: 0.29, distance: 4.5, period: 1, phase: 2.7 },
+  { name: 'Mars', color: '#c76f55', size: 0.23, distance: 5.8, period: 1.88, phase: 3.8 },
+  { name: 'Jupiter', color: '#c9a783', size: 0.59, distance: 7.8, period: 11.86, phase: 4.8 },
+  { name: 'Saturn', color: '#d4c093', size: 0.49, distance: 10, period: 29.4, phase: 5.6, ring: true },
 ]
 
-function Sun() {
-  const sunRef = useRef<THREE.Mesh>(null)
+function Sun({ selected }: { selected: boolean }) {
+  const ref = useRef<THREE.Mesh>(null)
 
   useFrame((_, delta) => {
-    if (sunRef.current) sunRef.current.rotation.y += delta * 0.08
+    if (ref.current) ref.current.rotation.y += delta * 0.035
   })
 
   return (
     <group>
-      <mesh>
-        <sphereGeometry args={[1.65, 48, 48]} />
-        <meshBasicMaterial color="#ff8b32" transparent opacity={0.045} side={THREE.BackSide} />
+      <mesh ref={ref}>
+        <sphereGeometry args={[0.78, 64, 64]} />
+        <meshBasicMaterial color="#ffbd70" />
       </mesh>
-
       <mesh>
-        <sphereGeometry args={[1.3, 48, 48]} />
-        <meshBasicMaterial color="#ffae45" transparent opacity={0.09} side={THREE.BackSide} />
-      </mesh>
-
-      <mesh ref={sunRef}>
-        <sphereGeometry args={[0.95, 64, 64]} />
-        <meshStandardMaterial
-          color="#ffb84d"
-          emissive="#ff7417"
-          emissiveIntensity={3.5}
-          roughness={0.85}
+        <sphereGeometry args={[0.84, 48, 48]} />
+        <meshBasicMaterial
+          color={selected ? '#fff0c9' : '#ffad58'}
+          transparent
+          opacity={selected ? 0.2 : 0.07}
+          side={THREE.BackSide}
+          depthWrite={false}
         />
       </mesh>
-
-      <pointLight color="#ffb45c" intensity={180} distance={45} decay={2} />
+      {selected && (
+        <mesh>
+          <sphereGeometry args={[1.02, 48, 48]} />
+          <meshBasicMaterial color="#ffc477" wireframe transparent opacity={0.16} />
+        </mesh>
+      )}
+      <pointLight color="#ffd09a" intensity={100} distance={40} decay={2} />
+      <Html position={[0, 1.15, 0]} center distanceFactor={15}>
+        <span className="pointer-events-none whitespace-nowrap text-[10px] font-medium tracking-[0.2em] text-amber-200/80">
+          SOL
+        </span>
+      </Html>
     </group>
   )
 }
 
-function Planet({ planet }: { planet: PlanetData }) {
-  const groupRef = useRef<THREE.Group>(null)
-  const meshRef = useRef<THREE.Mesh>(null)
+function Planet({
+  data,
+  running,
+  speed,
+  selected,
+  showLabels,
+}: {
+  data: (typeof bodies)[number]
+  running: boolean
+  speed: number
+  selected: boolean
+  showLabels: boolean
+}) {
+  const group = useRef<THREE.Group>(null)
+  const mesh = useRef<THREE.Mesh>(null)
+  const angle = useRef(data.phase)
 
-  useFrame((state, delta) => {
-    if (!groupRef.current || !meshRef.current) return
+  useFrame((_, delta) => {
+    if (!group.current || !mesh.current || !running) return
 
-    const angle = state.clock.elapsedTime * planet.speed + planet.phase
-
-    groupRef.current.position.set(
-      Math.cos(angle) * planet.distance,
-      planet.height + Math.sin(angle * 0.7) * 0.08,
-      Math.sin(angle) * planet.distance,
+    angle.current += (delta * speed * 0.42) / Math.sqrt(data.period)
+    group.current.position.set(
+      Math.cos(angle.current) * data.distance,
+      0,
+      Math.sin(angle.current) * data.distance,
     )
-
-    meshRef.current.rotation.y += delta * 0.35
+    mesh.current.rotation.y += delta * speed * 0.12
   })
 
   return (
-    <group ref={groupRef}>
-      <mesh ref={meshRef}>
-        <sphereGeometry args={[planet.size, 64, 64]} />
+    <group ref={group} position={[
+      Math.cos(data.phase) * data.distance,
+      0,
+      Math.sin(data.phase) * data.distance,
+    ]}>
+      <mesh ref={mesh}>
+        <sphereGeometry args={[data.size, 64, 64]} />
         <meshStandardMaterial
-          color={planet.color}
-          roughness={planet.roughness}
-          metalness={0.04}
-          emissive={planet.emissive ?? '#000000'}
-          emissiveIntensity={0.35}
+          color={data.color}
+          roughness={0.86}
+          metalness={0.02}
+          emissive={selected ? data.color : '#000000'}
+          emissiveIntensity={selected ? 0.38 : 0}
         />
       </mesh>
 
-      {planet.ring && (
-        <mesh rotation={[Math.PI / 2.25, 0.15, 0.1]}>
-          <ringGeometry args={[planet.size * 1.25, planet.size * 2.05, 96]} />
-          <meshStandardMaterial
-            color="#c9ad7d"
-            side={THREE.DoubleSide}
+      {selected && (
+        <mesh>
+          <sphereGeometry args={[data.size * 1.2, 32, 32]} />
+          <meshBasicMaterial
+            color="#8bdfff"
+            wireframe
             transparent
-            opacity={0.82}
-            roughness={0.9}
+            opacity={0.28}
           />
         </mesh>
       )}
 
-      <mesh>
-        <sphereGeometry args={[planet.size * 1.12, 32, 32]} />
-        <meshBasicMaterial
-          color={planet.color}
-          transparent
-          opacity={0.045}
-          side={THREE.BackSide}
-        />
-      </mesh>
+      {data.ring && (
+        <group rotation={[Math.PI / 2.3, 0.12, 0.12]}>
+          <mesh>
+            <ringGeometry args={[data.size * 1.35, data.size * 2.15, 128]} />
+            <meshStandardMaterial
+              color="#bca77f"
+              roughness={0.95}
+              side={THREE.DoubleSide}
+            />
+          </mesh>
+          <mesh>
+            <ringGeometry args={[data.size * 1.55, data.size * 1.7, 128]} />
+            <meshBasicMaterial
+              color="#e6d5b4"
+              transparent
+              opacity={0.45}
+              side={THREE.DoubleSide}
+            />
+          </mesh>
+        </group>
+      )}
+
+      {showLabels && (
+        <Html position={[0, data.size + 0.25, 0]} center distanceFactor={16}>
+          <span className={`pointer-events-none whitespace-nowrap text-[9px] tracking-[0.14em] ${selected ? 'text-cyan-200' : 'text-slate-400/70'}`}>
+            {data.name.toUpperCase()}
+          </span>
+        </Html>
+      )}
     </group>
   )
 }
 
-function OrbitPath({ distance }: { distance: number }) {
+function OrbitPath({ radius }: { radius: number }) {
   return (
-    <group rotation={[Math.PI / 2, 0, 0]}>
-      <mesh>
-        <torusGeometry args={[distance, 0.012, 8, 240]} />
-        <meshBasicMaterial color="#4d9db8" transparent opacity={0.48} />
-      </mesh>
-      <mesh>
-        <torusGeometry args={[distance, 0.035, 8, 240]} />
-        <meshBasicMaterial color="#3985aa" transparent opacity={0.055} />
-      </mesh>
-    </group>
+    <mesh rotation={[Math.PI / 2, 0, 0]}>
+      <torusGeometry args={[radius, 0.006, 6, 200]} />
+      <meshBasicMaterial
+        color="#78a5c2"
+        transparent
+        opacity={0.25}
+        depthWrite={false}
+      />
+    </mesh>
   )
 }
 
-function Scene() {
+function Scene(props: Props) {
   return (
     <>
-      <color attach="background" args={['#030711']} />
-      <fog attach="fog" args={['#030711', 25, 55]} />
+      <color attach="background" args={['#050914']} />
+      <fog attach="fog" args={['#050914', 26, 48]} />
+      <ambientLight intensity={0.36} />
+      <directionalLight position={[8, 10, 5]} intensity={1.15} color="#dceaff" />
+      <Stars radius={85} depth={55} count={2200} factor={2} saturation={0.12} fade speed={0.12} />
 
-      <ambientLight intensity={0.45} />
-      <directionalLight position={[8, 10, 5]} intensity={1.2} color="#c8e2ff" />
+      <Sun selected={props.selected === 'Sol'} />
 
-      <Stars
-        radius={100}
-        depth={70}
-        count={5000}
-        factor={4}
-        saturation={0.2}
-        fade
-        speed={0.25}
-      />
+      {props.showOrbits && bodies.map((body) => (
+        <OrbitPath key={body.name} radius={body.distance} />
+      ))}
 
-      <Sun />
-
-      {planets.map((planet) => (
-        <group key={planet.name}>
-          <OrbitPath distance={planet.distance} />
-          <Planet planet={planet} />
-        </group>
+      {bodies.map((body) => (
+        <Planet
+          key={body.name}
+          data={body}
+          running={props.running}
+          speed={props.speed}
+          selected={props.selected === body.name}
+          showLabels={props.showLabels}
+        />
       ))}
 
       <OrbitControls
         makeDefault
         enableDamping
-        dampingFactor={0.055}
-        minDistance={8}
-        maxDistance={30}
-        minPolarAngle={0.2}
-        maxPolarAngle={Math.PI * 0.85}
+        dampingFactor={0.06}
+        minDistance={7}
+        maxDistance={24}
+        minPolarAngle={0.25}
+        maxPolarAngle={Math.PI * 0.78}
         target={[0, 0, 0]}
       />
     </>
   )
 }
 
-export default function SimulationCanvas() {
+export default function SimulationCanvas(props: Props) {
   return (
     <Canvas
-      camera={{
-        position: [0, 17, 23],
-        fov: 42,
-        near: 0.1,
-        far: 200,
-      }}
-      dpr={[1, 2]}
-      gl={{ antialias: true, alpha: false }}
+      camera={{ position: [0, 14, 19], fov: 40, near: 0.1, far: 120 }}
+      dpr={[1, 1.75]}
+      gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
     >
-      <Scene />
+      <Scene {...props} />
     </Canvas>
   )
 }
